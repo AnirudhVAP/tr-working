@@ -1,21 +1,18 @@
 //App.js
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ImageBackground, ScrollView, SafeAreaView, Dimensions, Linking, TextInput, Alert, Platform, Modal, ActivityIndicator, LogBox } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, ImageBackground, ScrollView, SafeAreaView, Dimensions, Linking, TextInput, Alert, Platform, Modal, ActivityIndicator } from 'react-native';
 import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator, DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer';
-import { gestureHandlerRootHOC } from 'react-native-gesture-handler';
 import Icons from 'react-native-vector-icons/FontAwesome';
-import RenderHtml, { HTMLElementModel, TDefaultRenderer } from 'react-native-render-html';
-import { SvgXml } from 'react-native-svg';
-import cheerio from 'cheerio';
+import { WebView } from 'react-native-webview';
 
 function HomeScreen({ navigation }) {
     return (
         <View style={styles.landing}>
             <View style={styles.landingpageboxes}>
-                <TouchableOpacity style={styles.landingsmallbox} onPress={() => navigation.navigate('Subjects')}>
+                <TouchableOpacity style={styles.landingsmallbox} onPress={() => navigation.navigate('TRSubjects')}>
                     <ImageBackground source={require('./assets/tr.png')} style={styles.landingimageBackground}>
                         <View style={styles.overlay} />
                         <Text style={styles.landingboxText}>TR            QUESTIONS</Text>
@@ -29,7 +26,7 @@ function HomeScreen({ navigation }) {
                 </TouchableOpacity>
             </View>
             <View style={styles.landingpageboxes}>
-                <TouchableOpacity style={styles.landingsmallbox} onPress={() => navigation.navigate('MCQPracticeQuestions')}>
+                <TouchableOpacity style={styles.landingsmallbox} onPress={() => navigation.navigate('MCQSubjects')}>
                     <ImageBackground source={require('./assets/mcq.png')} style={styles.landingimageBackground}>
                         <View style={styles.overlay} />
                         <Text style={styles.landingboxText}>MCQ PRACTICE QUESTIONS</Text>
@@ -56,7 +53,7 @@ const decodeBase64 = (base64String) => {
   return `data:image/jpeg;base64,${base64String}`;
 };
 
-const Subjects = ({ navigation }) => {
+const TRSubjects = ({ navigation }) => {
   const [subjects, setSubjects] = useState([]);
 
   useEffect(() => {
@@ -65,7 +62,7 @@ const Subjects = ({ navigation }) => {
 
   const fetchSubjects = async () => {
     try {
-      const response = await axios.get('http://192.168.1.5:8080/api/subjects/getsubjects');
+      const response = await axios.get('http://192.168.1.8:8080/api/subjects/getsubjects');
       setSubjects(response.data);
     } catch (error) {
       console.error('Error fetching subjects:', error);
@@ -128,7 +125,7 @@ const TRQuestions = ({ route, navigation }) => {
     useEffect(() => {
       async function fetchData() {
         try {
-          const questionsResponse = await axios.get('http://192.168.1.5:8080/trquestions/get');
+          const questionsResponse = await axios.get('http://192.168.1.8:8080/trquestions/get');
           const filteredQuestions = questionsResponse.data.filter(question =>
             question.option === subjectName
           );
@@ -178,11 +175,123 @@ const TRQuestions = ({ route, navigation }) => {
     );
   };
 
-const HRQuestions = () => (
-    <View style={styles.centeredView}>
-        <Text>HR Questions Page</Text>
+const HRQuestions = ({ route, navigation }) => {
+    const [data, setData] = useState([]);
+  
+    useEffect(() => {
+      async function fetchData() {
+        try {
+          const questionsResponse = await axios.get('http://192.168.1.8:8080/api/hrQuestions/getHrQuestions');
+          setData(questionsResponse.data);
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+      }
+  
+      fetchData();
+    }, []);
+  
+    return (
+      <View style={styles.trcontainer}>
+        <View style={styles.subjectContainer}>
+          <ScrollView contentContainerStyle={styles.scrollContainer}>
+            <View style={styles.questionsContainer}>
+              {data.map((item, index) => (
+                <Questions key={index} question={item.question} answer={item.answer} />
+              ))}
+            </View>
+          </ScrollView>
+        </View>
+      </View>
+    );
+  };
+  
+const Questions = ({ question, answer }) => {
+    const [isPressed, setIsPressed] = useState(false);
+  
+    return (
+      <View style={styles.containerquestion}>
+        <TouchableOpacity onPress={() => setIsPressed(!isPressed)}>
+          <View style={[styles.questionbox, isPressed && styles.questionboxPressed]}>
+            <Text style={styles.questionText}>Question:</Text>
+            <Text style={styles.textquestion}>{question}</Text>
+            {isPressed && (
+              <View style={styles.answerbox}>
+                <View style={styles.linetr} />
+                <Text style={styles.answerText}>Answer:</Text>
+                <Text>{answer}</Text>
+              </View>
+            )}
+          </View>
+        </TouchableOpacity>
+      </View>
+    );
+}; 
+
+const MCQSubjects = ({ navigation }) => {
+  const [subjects, setSubject] = useState([]);
+
+  useEffect(() => {
+    fetchSubjects();
+  }, []);
+
+  const fetchSubjects = async () => {
+    try {
+      const response = await axios.get('http://192.168.1.8:8080/api/subjects/getsubjects');
+      setSubject(response.data);
+    } catch (error) {
+      console.error('Error fetching subjects:', error);
+    }
+  };
+
+  const renderMCQSubjectsInRows = () => {
+    const rows = [];
+    for (let i = 0; i < subjects.length; i += 2) {
+      const firstSubject = subjects[i];
+      const secondSubject = subjects[i + 1];
+      rows.push(
+        <View key={i} style={styles.subjectRow}>
+          <TouchableOpacity
+            style={styles.subjectItemWrapper}
+            onPress={() => navigation.navigate('MCQPracticeQuestions', { subjectName: firstSubject.subjectName })}
+          >
+            <View style={styles.subjectItem}>
+              <Image style={styles.subjectIcon} source={{ uri: decodeBase64(firstSubject.subjectIcon) }} />
+              <Text style={styles.subjectName}>{firstSubject.subjectName}</Text>
+            </View>
+          </TouchableOpacity>
+          {secondSubject && (
+            <TouchableOpacity
+              style={styles.subjectItemWrapper}
+              onPress={() => navigation.navigate('MCQPracticeQuestions', { subjectName: secondSubject.subjectName })}
+            >
+              <View style={styles.subjectItem}>
+                <Image style={styles.subjectIcon} source={{ uri: decodeBase64(secondSubject.subjectIcon) }} />
+                <Text style={styles.subjectName}>{secondSubject.subjectName}</Text>
+              </View>
+            </TouchableOpacity>
+          )}
+        </View>
+      );
+    }
+    return rows;
+  };
+
+  return (
+    <View style={styles.subjectcontainer}>
+      <View style={styles.subjectbackground} />
+      <View style={styles.subjectContainer}>
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          {subjects.length > 0 ? (
+            renderMCQSubjectsInRows()
+          ) : (
+            <Text style={styles.noSubjectsText}>No subjects available</Text>
+          )}
+        </ScrollView>
+      </View>
     </View>
-);
+  );
+};
 
 const MCQPracticeQuestions = () => (
     <View style={styles.centeredView}>
@@ -323,127 +432,25 @@ const FAQItem = ({ question, answer, index, expandedIndex, setExpandedIndex }) =
     );
   };
 
-LogBox.ignoreLogs([
-  'Warning: %s: Support for the defaultProps will be removed from function components in a future major release.',
-]);
-
-const { width: windowWidth } = Dimensions.get('window');
-const cardWidth = windowWidth * 0.9;
-
-const BlogScreen = () => {
-  const [blogContent, setBlogContent] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchBlogContent = async () => {
-      try {
-        const response = await fetch('https://bodhasoft.com/blogs');
-        const htmlString = await response.text();
-        const $ = cheerio.load(htmlString);
-
-        // Log the HTML content to understand its structure
-        console.log('Fetched HTML:', htmlString);
-
-        // Clean up the HTML content
-        $('header, footer, nav, script').remove(); // Remove unwanted elements
-
-        // Adjust this line based on actual structure
-        const cleanedHtml = $('body').html(); // You may need to adjust the selector to target the correct element
-
-        // Log the cleaned HTML content to ensure it's correct
-        console.log('Cleaned HTML:', cleanedHtml);
-
-        setBlogContent(cleanedHtml);
-        setLoading(false);
-      } catch (error) {
-        console.error(error);
-        setLoading(false);
-      }
-    };
-
-    fetchBlogContent();
-  }, []);
-
-  const customHTMLElementModels = {
-    button: {
-      renderer: ({ tnode = { children: [{ data: 'Default' }] } }) => {
-        const onPress = () => {
-          console.log('Button pressed');
-        };
-
-        return (
-          <Button title={tnode.children[0].data} onPress={onPress} />
-        );
-      }
-    },
-    form: {
-      renderer: ({ TDefaultRenderer, tnode }) => {
-        return (
-          <View>
-            <TDefaultRenderer tnode={tnode} />
+  const BlogScreen = () => {
+    const [loading, setLoading] = useState(true);
+  
+    return (
+      <SafeAreaView style={{ flex: 1 }}>
+  
+        {loading && (
+          <View style={styles.blogsloadingContainer}>
+            <ActivityIndicator size="large" color="#0000ff" />
           </View>
-        );
-      }
-    },
-    svg: {
-      renderer: ({ tnode = { children: [{ data: '<svg></svg>' }] } }) => {
-        const svgContent = tnode.children[0].data;
-
-        return (
-          <SvgXml xml={svgContent} />
-        );
-      }
-    }
-  };
-
-  const ignoredDomTags = ['button', 'form', 'svg'];
-
-  return (
-    <SafeAreaView style={styles.blogContainer}>
-      <ScrollView contentContainerStyle={styles.blogScrollViewContent}>
-        <View style={styles.blogFrame}>
-          <Text style={styles.blogFrameText}>Blogs & News</Text>
-        </View>
-        {loading ? (
-          <ActivityIndicator size="large" color="#0000ff" />
-        ) : (
-          blogContent && (
-            <RenderHtml
-              contentWidth={windowWidth}
-              source={{ html: blogContent }}
-              tagsStyles={tagsStyles}
-              customHTMLElementModels={customHTMLElementModels}
-              ignoredDomTags={ignoredDomTags}
-            />
-          )
         )}
-      </ScrollView>
-    </SafeAreaView>
-  );
-};
-
-const tagsStyles = {
-  p: {
-    marginVertical: 8,
-    lineHeight: 24,
-    fontSize: 16,
-  },
-  h1: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginVertical: 16,
-  },
-  h2: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginVertical: 14,
-  },
-  h3: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginVertical: 12,
-  },
-};
+        <WebView
+          source={{ uri: 'https://bodhasoft.com/blogs' }}
+          onLoadEnd={() => setLoading(false)}
+          style={{ flex: 1 }}
+        />
+      </SafeAreaView>
+    );
+  };
 
   const ProfileCard = ({ name, role, imageSource, companyLogo, paragraph }) => {
     const [rating, setRating] = useState(5);
@@ -1227,9 +1234,10 @@ function MainStack() {
     return (
         <Stack.Navigator>
             <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
-            <Stack.Screen name="Subjects" component={Subjects} options={{ title: 'Subject Selection' }} />
+            <Stack.Screen name="TRSubjects" component={TRSubjects} options={{ title: 'Subject Selection' }} />
             <Stack.Screen name="TRQuestions" component={TRQuestions} options={{ title: 'TR Questions' }} />
             <Stack.Screen name="HRQuestions" component={HRQuestions} options={{ title: 'HR Questions' }} />
+            <Stack.Screen name="MCQSubjects" component={MCQSubjects} options={{ title: 'Subject Selection' }} />
             <Stack.Screen name="MCQPracticeQuestions" component={MCQPracticeQuestions} options={{ title: 'MCQ Practice Questions' }} />
             <Stack.Screen name="MockInterviews" component={MockInterviews} options={{ title: 'Mock Interviews' }} />
             <Stack.Screen name="WorkshopAreas" component={WorkshopAreas} options={{ title: 'Workshop Area' }} />
@@ -1706,20 +1714,12 @@ const styles = StyleSheet.create({
         height: 20,
         resizeMode: 'contain',
       },
-      blogcontainer: {
-        flex: 1,
-        backgroundColor: '#fff',
-      },
-      blogScrollViewContent: {
-        alignItems: 'center',
-        padding: 16,
-      },
-      blogFrame: {
-        marginBottom: 16,
-      },
-      blogFrameText: {
-        fontSize: 24,
-        fontWeight: 'bold',
+      blogsloadingContainer: {
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: [{ translateX: -25 }, { translateY: -25 }],
+        zIndex: 1,
       },
       placementcontainer: {
         flex: 1,
