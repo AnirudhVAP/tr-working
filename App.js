@@ -62,9 +62,9 @@ const TRSubjects = ({ navigation }) => {
 
   const fetchSubjects = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/subjects/getsubjects');
+      const response = await axios.get('http://192.168.29.5:8080/api/subjects/getsubjects');
       setSubjects(response.data);
-      console.log(subjects)
+    
     } catch (error) {
       console.error('Error fetching subjects:', error);
     }
@@ -182,7 +182,7 @@ const HRQuestions = ({ route, navigation }) => {
     useEffect(() => {
       async function fetchData() {
         try {
-          const questionsResponse = await axios.get('http://localhost:8080/api/hrQuestions/getHrQuestions');
+          const questionsResponse = await axios.get('http://192.168.29.5:8080/api/hrQuestions/getHrQuestions');
           setData(questionsResponse.data);
         } catch (error) {
           console.error('Error fetching data:', error);
@@ -238,9 +238,9 @@ const MCQSubjects = ({ navigation }) => {
 
   const fetchSubjects = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/subjects/getsubjects');
+      const response = await axios.get('http://192.168.29.5:8080/api/subjects/getsubjects');
       setSubjects(response.data);
-      console.log(subjects)
+     
     } catch (error) {
       console.error('Error fetching subjects:', error);
     }
@@ -309,7 +309,7 @@ const MCQPracticeQuestions = ({ route }) => {
 
   const fetchQuestions = async () => {
     try {
-      const response = await axios.get(`http://localhost:8080/api/mcq/questions?subject=${subjectName}`);
+      const response = await axios.get(`http://192.168.29.5:8080/api/mcq/questions?subject=${subjectName}`);
       setQuestions(response.data);
     } catch (err) {
       setError(err.message);
@@ -337,7 +337,8 @@ const MCQPracticeQuestions = ({ route }) => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <View style={styles.flexContainer}>
+    <ScrollView contentContainerStyle={styles.scrollContainer}>
       <Text style={styles.header}>{subjectName} Questions</Text>
       {error ? (
         <Text style={styles.errorText}>Error: {error}</Text>
@@ -370,6 +371,7 @@ const MCQPracticeQuestions = ({ route }) => {
         ))
       )}
     </ScrollView>
+    </View>
   );
 };
 
@@ -2351,5 +2353,7 @@ const styles = StyleSheet.create({
     color: '#9c27b0',
   },
 
-    
+  flexContainer: {
+    flex: 1,
+  },
 });
