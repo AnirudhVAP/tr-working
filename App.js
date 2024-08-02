@@ -1428,22 +1428,9 @@ const styles = StyleSheet.create({
         shadowOpacity: 4,
         shadowRadius: 2,
         elevation: 5,
-        overflow: 'hidden',
+        overflow: 'auto',
     },
-    landingwidebox: {
-        width: '95%',
-        height: 110,
-        borderRadius: 27,
-        justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.8,
-        shadowRadius: 2,
-        elevation: 5,
-        marginLeft: 10,
-        overflow: 'hidden',
-    },
+  
     landingimageBackground: {
         flex: 1,
         justifyContent: 'center',
@@ -1553,7 +1540,7 @@ const styles = StyleSheet.create({
     workbackground: {
         flex: 1,
         resizeMode: 'cover',
-        overflow: 'hidden',
+        overflow: 'auto',
       },
       works: {
         flex: 1,
@@ -1584,7 +1571,7 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%',
         borderRadius: 20,
-        overflow: 'hidden',
+        overflow: 'auto',
       },
       buttonImage: {
         width: '100%',
@@ -2208,7 +2195,7 @@ const styles = StyleSheet.create({
       aboutimageContainer: {
         alignItems: 'center',
         marginBottom: 10,
-        overflow: 'hidden',
+        overflow: 'auto',
       },
       aboutimage: {
         width: '70%',
@@ -2264,7 +2251,7 @@ const styles = StyleSheet.create({
         width: 60,
         height: 60,
         borderRadius: 30,
-        overflow: 'hidden',
+        overflow: 'auto',
         marginRight: 10,
         justifyContent: 'center',
         alignItems: 'center',
@@ -2309,7 +2296,7 @@ const styles = StyleSheet.create({
         borderBottomRightRadius: 10,
         justifyContent: 'center',
         alignItems: 'center',
-        overflow: 'hidden',
+        overflow: 'auto',
       },
       technologyText: {
         color: '#FFFFFF',
