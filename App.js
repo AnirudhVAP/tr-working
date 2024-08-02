@@ -589,26 +589,44 @@ const Hoverable = ({ children }) => {
     </View>
   );
 };
-
+//collegetocorporate Component
+const CollegeCorporateScreen = () => {
+  return (
+    <View style={styles.container}>
+      <WebView
+        source={{ uri: 'https://www.bodhasoft.com/college-to-corporate-program' }}
+        style={{ flex: 1 }}
+      />
+    </View>
+  );
+}
 // ContactScreen Component
 const ContactScreen = () => {
-  const url = "https://www.bodhasoft.com/contact";
+  return (
+    <View style={styles.container}>
+      <WebView
+        source={{ uri: 'https://www.bodhasoft.com/contact' }}
+        style={{ flex: 1 }}
+      />
+    </View>
+  );
+  // const url = "https://www.bodhasoft.com/contact";
 
-  const handlePress = async () => {
-    const supported = await Linking.canOpenURL(url);
+  // const handlePress = async () => {
+  //   const supported = await Linking.canOpenURL(url);
 
-    if (supported) {
-      await Linking.openURL(url);
-    } else {
-      Alert.alert(
-        "No Browser Found",
-        "Please install a web browser to view this content.",
-        [{ text: "OK" }]
-      );
-    }
-  };
+  //   if (supported) {
+  //     await Linking.openURL(url);
+  //   } else {
+  //     Alert.alert(
+  //       "No Browser Found",
+  //       "Please install a web browser to view this content.",
+  //       [{ text: "OK" }]
+  //     );
+  //   }
+  // };
 
-  return handlePress;
+  // return handlePress;
   // // State hooks for form inputs
   // const [name, setName] = useState('');
   // const [email, setEmail] = useState('');
@@ -863,23 +881,14 @@ const TechnologyContainer = ({ imageSource, technology }) => {
 
 //About Us Screen
 const AboutScreen = () => {
-  const url = "https://www.bodhasoft.com/about";
-
-  const handlePress = async () => {
-    const supported = await Linking.canOpenURL(url);
-
-    if (supported) {
-      await Linking.openURL(url);
-    } else {
-      Alert.alert(
-        "No Browser Found",
-        "Please install a web browser to view this content.",
-        [{ text: "OK" }]
-      );
-    }
-  };
-
-  return handlePress;
+  return (
+    <View style={styles.container}>
+      <WebView
+        source={{ uri: 'https://www.bodhasoft.com/about' }}
+        style={{ flex: 1 }}
+      />
+    </View>
+  );
   // const [email, setEmail] = useState('');
 
   // // Array of technology data
@@ -1120,15 +1129,11 @@ const Footer = () => {
         <Image style={styles.Placements} source={require('./assets/PlacementsIcon.png')} />
         <Text style={styles.footerText}>Placements</Text>
       </TouchableOpacity>
-      {/* <TouchableOpacity style={styles.footerButton} onPress={() => navigation.navigate('ContactScreen')}>
-        <Image style={styles.Contact} source={require('./assets/ContactUsIcon.png')} />
-        <Text style={styles.footerText}>Contact Us</Text>
-      </TouchableOpacity> */}
-      <TouchableOpacity style={styles.footerButton} onPress={handleContactPress}>
+      <TouchableOpacity style={styles.footerButton} onPress={() => navigation.navigate('ContactScreen')}>
         <Image style={styles.Contact} source={require('./assets/ContactUsIcon.png')} />
         <Text style={styles.footerText}>Contact Us</Text>
       </TouchableOpacity>
-      <TouchableOpacity style={styles.footerButton} onPress={handleAboutPress}>
+      <TouchableOpacity style={styles.footerButton} onPress={() => navigation.navigate('AboutScreen')}>
         <Image style={styles.Contact} source={require('./assets/AboutUsIcon.png')} />
         <Text style={styles.footerText}>About Us</Text>
       </TouchableOpacity>
@@ -1194,27 +1199,10 @@ const BrowserSelectionModal = ({ visible, onClose, onSelect }) => {
   );
 };
 //To college-corporate page
-const CollegeToCorporateScreen = () => {
-  const url = "https://www.bodhasoft.com/college-to-corporate-program";
 
-  const handlePress = async () => {
-    const supported = await Linking.canOpenURL(url);
-
-    if (supported) {
-      await Linking.openURL(url);
-    } else {
-      Alert.alert(
-        "No Browser Found",
-        "Please install a web browser to view this content.",
-        [{ text: "OK" }]
-      );
-    }
-  };
-
-  return handlePress;  // Returning the handlePress function
-};
 const CustomDrawerContent = (props) => {
-  const handleCollegeToCorporatePress = CollegeToCorporateScreen();
+  const navigation = useNavigation();
+
   const [modalVisible, setModalVisible] = useState(false);
 
   const handleBrowserSelection = (url) => {
@@ -1244,15 +1232,6 @@ const CustomDrawerContent = (props) => {
         )}
         onPress={() => props.navigation.navigate('Home')}
       />
-      {/* <DrawerItem
-        label={() => (
-          <View style={styles.drawerItem}>
-            <Image source={require('./assets/ctc.png')} style={styles.drawerIcon} />
-            <Text style={styles.drawerLabel}>College to Corporate</Text>
-          </View>
-        )}
-        onPress={() => setModalVisible(true)}
-      /> */}
       <DrawerItem
         label={() => (
           <View style={styles.drawerItem}>
@@ -1260,7 +1239,7 @@ const CustomDrawerContent = (props) => {
             <Text style={styles.drawerLabel}>College to Corporate</Text>
           </View>
         )}
-        onPress={handleCollegeToCorporatePress}
+        onPress={() => navigation.navigate("CollegeCorporateScreen")}
       />
       <DrawerItem
         label={() => (
@@ -1317,6 +1296,7 @@ function MainStack() {
       <Stack.Screen name="PlacementScreen" component={PlacementScreen} options={{ title: 'Placements' }} />
       <Stack.Screen name="ContactScreen" component={ContactScreen} options={{ title: 'Contact Us' }} />
       <Stack.Screen name="AboutScreen" component={AboutScreen} options={{ title: 'About Us' }} />
+      <Stack.Screen name="CollegeCorporateScreen" component={CollegeCorporateScreen} options={{ title: 'College To Corporate' }} />
       <Stack.Screen name="Mentoring" component={Mentoring} options={{ title: 'Mentoring' }} />
       <Stack.Screen name="Profile" component={Profile} options={{ title: 'Profile' }} />
       <Stack.Screen name="Logout" component={Logout} options={{ title: 'Logout' }} />
