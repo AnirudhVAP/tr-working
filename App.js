@@ -62,8 +62,9 @@ const TRSubjects = ({ navigation }) => {
 
   const fetchSubjects = async () => {
     try {
-      const response = await axios.get('http://192.168.1.8:8080/api/subjects/getsubjects');
+      const response = await axios.get('http://localhost:8080/api/subjects/getsubjects');
       setSubjects(response.data);
+      console.log(subjects)
     } catch (error) {
       console.error('Error fetching subjects:', error);
     }
@@ -125,7 +126,7 @@ const TRQuestions = ({ route, navigation }) => {
     useEffect(() => {
       async function fetchData() {
         try {
-          const questionsResponse = await axios.get('http://192.168.1.8:8080/trquestions/get');
+          const questionsResponse = await axios.get('http://localhost/trquestions/get');
           const filteredQuestions = questionsResponse.data.filter(question =>
             question.option === subjectName
           );
@@ -181,7 +182,7 @@ const HRQuestions = ({ route, navigation }) => {
     useEffect(() => {
       async function fetchData() {
         try {
-          const questionsResponse = await axios.get('http://192.168.1.8:8080/api/hrQuestions/getHrQuestions');
+          const questionsResponse = await axios.get('http://localhost:8080/api/hrQuestions/getHrQuestions');
           setData(questionsResponse.data);
         } catch (error) {
           console.error('Error fetching data:', error);
@@ -229,7 +230,7 @@ const Questions = ({ question, answer }) => {
 }; 
 
 const MCQSubjects = ({ navigation }) => {
-  const [subjects, setSubject] = useState([]);
+  const [subjects, setSubjects] = useState([]);
 
   useEffect(() => {
     fetchSubjects();
@@ -237,13 +238,13 @@ const MCQSubjects = ({ navigation }) => {
 
   const fetchSubjects = async () => {
     try {
-      const response = await axios.get('http://192.168.1.8:8080/api/subjects/getsubjects');
-      setSubject(response.data);
+      const response = await axios.get('http://localhost:8080/api/subjects/getsubjects');
+      setSubjects(response.data);
+      console.log(subjects)
     } catch (error) {
       console.error('Error fetching subjects:', error);
     }
   };
-
   const renderMCQSubjectsInRows = () => {
     const rows = [];
     for (let i = 0; i < subjects.length; i += 2) {
@@ -253,7 +254,7 @@ const MCQSubjects = ({ navigation }) => {
         <View key={i} style={styles.subjectRow}>
           <TouchableOpacity
             style={styles.subjectItemWrapper}
-            onPress={() => navigation.navigate('MCQPracticeQuestions', { subjectName: firstSubject.subjectName })}
+            onPress={() => navigation.navigate('MCQPracticeQuestions', { subjectName: firstSubject.subjectName.toLowerCase()})}
           >
             <View style={styles.subjectItem}>
               <Image style={styles.subjectIcon} source={{ uri: decodeBase64(firstSubject.subjectIcon) }} />
@@ -263,7 +264,7 @@ const MCQSubjects = ({ navigation }) => {
           {secondSubject && (
             <TouchableOpacity
               style={styles.subjectItemWrapper}
-              onPress={() => navigation.navigate('MCQPracticeQuestions', { subjectName: secondSubject.subjectName })}
+              onPress={() => navigation.navigate('MCQPracticeQuestions', { subjectName: secondSubject.subjectName.toLowerCase() })}
             >
               <View style={styles.subjectItem}>
                 <Image style={styles.subjectIcon} source={{ uri: decodeBase64(secondSubject.subjectIcon) }} />
@@ -293,11 +294,86 @@ const MCQSubjects = ({ navigation }) => {
   );
 };
 
-const MCQPracticeQuestions = () => (
-    <View style={styles.centeredView}>
-        <Text>MCQ Practice Questions Page</Text>
-    </View>
-);
+
+
+const MCQPracticeQuestions = ({ route }) => {
+  const { subjectName } = route.params;
+  const [questions, setQuestions] = useState([]);
+  const [error, setError] = useState(null);
+  const [selectedOptions, setSelectedOptions] = useState({});
+  const [feedback, setFeedback] = useState({});
+
+  useEffect(() => {
+    fetchQuestions();
+  }, []);
+
+  const fetchQuestions = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8080/api/mcq/questions?subject=${subjectName}`);
+      setQuestions(response.data);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleOptionSelect = (questionIndex, option) => {
+    setSelectedOptions({
+      ...selectedOptions,
+      [questionIndex]: option,
+    });
+
+    const correctAnswer = questions[questionIndex].answer;
+    if (option === correctAnswer) {
+      setFeedback({
+        ...feedback,
+        [questionIndex]: "Correct!",
+      });
+    } else {
+      setFeedback({
+        ...feedback,
+        [questionIndex]: `Incorrect. Explanation: ${questions[questionIndex].explanation}`,
+      });
+    }
+  };
+
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.header}>{subjectName} Questions</Text>
+      {error ? (
+        <Text style={styles.errorText}>Error: {error}</Text>
+      ) : (
+        questions.map((question, index) => (
+          <View key={index} style={styles.questionContainer}>
+            <Text style={styles.questionText}>{question.question}</Text>
+            {['option1', 'option2', 'option3', 'option4'].map((optionKey) => (
+              <TouchableOpacity
+                key={optionKey}
+                style={[
+                  styles.optionButton,
+                  selectedOptions[index] === optionKey && (
+                    questions[index].answer === optionKey
+                      ? styles.correctOptionButton
+                      : styles.incorrectOptionButton
+                  ),
+                ]}
+                onPress={() => handleOptionSelect(index, optionKey)}
+              >
+                <Text style={styles.optionText}>
+                  {optionKey === 'option1' ? 'A' :
+                  optionKey === 'option2' ? 'B' :
+                  optionKey === 'option3' ? 'C' : 'D'}. {question[optionKey]}
+                </Text>
+              </TouchableOpacity>
+            ))}
+            {feedback[index] && <Text style={styles.feedbackText}>{feedback[index]}</Text>}
+          </View>
+        ))
+      )}
+    </ScrollView>
+  );
+};
+
+
 
 const MockInterviews = () => (
     <View style={styles.centeredView}>
@@ -2239,5 +2315,54 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         textAlign: 'center',
       },
+      
+
+ 
+  errorText: {
+    color: 'red',
+  },
+  questionContainer: {
+    marginBottom: 20,
+    alignItems: 'center',
+    width: '100%',
+    paddingHorizontal: 10,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    paddingVertical: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  questionText: {
+    fontSize: 18,
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  optionButton: {
+    backgroundColor: '#f0f0f0',
+    padding: 15,
+    marginVertical: 5,
+    borderRadius: 5,
+    width: '90%',
+    borderColor: '#dcdcdc',
+    borderWidth: 1,
+  },
+  correctOptionButton: {
+    backgroundColor: '#a5d6a7',
+  },
+  incorrectOptionButton: {
+    backgroundColor: '#ef9a9a',
+  },
+  optionText: {
+    fontSize: 16,
+  },
+  feedbackText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#9c27b0',
+  },
+
     
 });
